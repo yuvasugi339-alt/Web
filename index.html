@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Java Code Manager</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #000000;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .header {
+      background: #1a1a1a;
+      border-radius: 10px;
+      padding: 25px;
+      margin-bottom: 30px;
+      box-shadow: 0 10px 40px rgba(0, 255, 136, 0.2);
+      border: 2px solid #00ff88;
+    }
+
+    h1 {
+      color: #00ff88;
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 28px;
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      border-top: 2px solid #00ff88;
+      padding-top: 20px;
+    }
+
+    .nav-btn {
+      padding: 12px 30px;
+      border: 2px solid #00dd77;
+      background: transparent;
+      color: #00dd77;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 14px;
+      transition: all 0.3s;
+      text-transform: uppercase;
+    }
+
+    .nav-btn:hover {
+      background: #00dd77;
+      color: #000000;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(0, 221, 119, 0.4);
+    }
+
+    .nav-btn.active {
+      background: #00dd77;
+      color: #000000;
+      border-color: #00dd77;
+      box-shadow: 0 5px 20px rgba(0, 221, 119, 0.4);
+    }
+
+    .page {
+      display: none;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    .content {
+      background: #1a1a1a;
+      border-radius: 10px;
+      padding: 30px;
+      box-shadow: 0 10px 40px rgba(0, 255, 136, 0.2);
+      border: 2px solid #00ff88;
+    }
+
+    /* Page 1 - View Programs */
+    .programs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+
+    .filter-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 14px;
+      justify-content: flex-end;
+    }
+
+    select.language-filter {
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 2px solid #00dd77;
+      background: #0d0d0d;
+      color: #00dd77;
+      font-weight: 600;
+    }
+
+    .program-card {
+      padding: 15px;
+      border: 2px solid #00dd77;
+      background: #0d0d0d;
+      color: #00dd77;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 13px;
+      text-align: center;
+      transition: all 0.3s;
+      min-height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      word-break: break-word;
+    }
+
+    .program-card:hover {
+      background: #00dd77;
+      color: #000000;
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(0, 221, 119, 0.6);
+    }
+
+    .program-card.active {
+      background: #00dd77;
+      color: #000000;
+      border-color: #00dd77;
+      box-shadow: 0 5px 15px rgba(0, 221, 119, 0.6);
+    }
+
+    .code-display {
+      background: #0d0d0d;
+      border: 2px solid #00ff88;
+      border-radius: 6px;
+      padding: 20px;
+      min-height: 200px;
+      position: relative;
+    }
+
+    .code-display.empty {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #00ff88;
+      font-style: italic;
+    }
+
+    code {
+      display: block;
+      font-family: 'Courier New', monospace;
+      color: #00ff88;
+      white-space: pre-wrap;
+      word-break: break-all;
+      line-height: 1.6;
+      font-size: 13px;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      padding: 8px 12px;
+      font-size: 12px;
+      background: #00dd77;
+      border: none;
+      color: #000000;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s;
+    }
+
+    .copy-btn:hover {
+      background: #00bb66;
+      box-shadow: 0 3px 10px rgba(0, 221, 119, 0.4);
+    }
+
+    .copy-btn.copied {
+      background: #4caf50;
+    }
+
+    /* Page 2 - Add Program */
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      color: #00ff88;
+      margin-bottom: 8px;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    input[type="text"],
+    textarea {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #00ff88;
+      border-radius: 6px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      resize: vertical;
+      transition: border-color 0.3s;
+      background: #0d0d0d;
+      color: #00ff88;
+    }
+
+    input[type="text"]:focus,
+    textarea:focus {
+      outline: none;
+      border-color: #00ff88;
+      box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+    }
+
+    textarea {
+      min-height: 250px;
+    }
+
+    .btn-add {
+      width: 100%;
+      padding: 14px;
+      background: #00dd77;
+      color: #000000;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .btn-add:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 221, 119, 0.4);
+      background: #00bb66;
+    }
+
+    .empty-state {
+      text-align: center;
+      color: #00ff88;
+      font-style: italic;
+      padding: 40px 20px;
+    }
+
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 22px;
+      }
+
+      .nav-tabs {
+        flex-wrap: wrap;
+      }
+
+      .nav-btn {
+        padding: 10px 20px;
+        font-size: 12px;
+      }
+
+      .programs-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      }
+
+      .content {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>☕ Code Manager</h1>
+      <div class="nav-tabs" id="navTabs" style="display: none;">
+        <button class="nav-btn active" onclick="showPage('view')">📚 View Programs</button>
+        <button class="nav-btn" id="addTabBtn" style="display: none;" onclick="showPage('add')">➕ Add Program</button>
+      </div>
+    </div>
+
+    <!-- Landing Page: Introduction -->
+    <div id="landing" class="page active">
+      <div class="content">
+        <div style="text-align: center; padding: 60px 40px;">
+          <h2 style="color: #00ff88; font-size: 32px; margin-bottom: 20px;">Welcome to Code Manager</h2>
+          <p style="color: #00ff88; font-size: 16px; margin-bottom: 40px; line-height: 1.6;">
+            Explore a collection of carefully curated programs and code snippets. <br>
+            Click below to view all available programs.
+          </p>
+          <button class="nav-btn" onclick="enterSite()" style="padding: 14px 40px; font-size: 16px;">
+            📚 View Programs →
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Page 1: View Programs -->
+    <div id="view" class="page">
+      <div class="content">
+        <div class="filter-row">
+          <label style="color: #00ff88; font-weight:700;">Filter:</label>
+          <select id="languageFilter" class="language-filter">
+            <option value="All">All</option>
+          </select>
+        </div>
+        <div class="programs-grid" id="programsGrid" style="margin-bottom: 30px;">
+          <div class="empty-state">Loading programs...</div>
+        </div>
+        <div class="code-display empty" id="codeDisplay">
+          <span>Select a program to view the code</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Page 2: Add Program -->
+    <div id="add" class="page">
+      <div class="content">
+        <h2 style="color: #00ff88; margin-bottom: 25px;">Create New Program</h2>
+        <div class="form-group">
+          <label for="programName">Program Name:</label>
+          <input type="text" id="programName" placeholder="e.g., HelloWorld, Calculator, BubbleSort">
+        </div>
+        <div class="form-group">
+          <label for="programCode">Java Code:</label>
+          <textarea id="programCode" placeholder="Paste your Java code here..."></textarea>
+        </div>
+        <button class="btn-add" onclick="addProgram()">✓ Add Program</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let programs = {};
+    const GITHUB_USERNAME = 'yuvasugi339-alt';
+    const GITHUB_REPO = 'Website';
+    const PROGRAMS_FOLDER = 'programs';
+
+    // Load programs from GitHub folder using GitHub API
+    function loadPrograms() {
+      const apiUrl = `https://api.github.com/repos/${GITHUB_USERNAME}/${GITHUB_REPO}/contents/${PROGRAMS_FOLDER}`;
+      
+      fetch(apiUrl)
+        .then(response => response.json())
+        .then(files => {
+          // Load all files (any programming language)
+          const codeFiles = files.filter(file => file.type === 'file');
+          
+          let loadedCount = 0;
+          const languagesSet = new Set();
+          
+          // Load each file
+          codeFiles.forEach(file => {
+            fetch(file.download_url)
+              .then(response => response.text())
+              .then(code => {
+                const id = file.name.toLowerCase().replace(/\./g, '_');
+                const name = file.name;
+                const lang = getLanguageFromFilename(name);
+                languagesSet.add(lang);
+                programs[id] = {
+                  name: name,
+                  code: code,
+                  language: lang
+                };
+                
+                loadedCount++;
+                // Render when all programs are loaded
+                if (loadedCount === codeFiles.length) {
+                  populateLanguageFilter(Array.from(languagesSet).sort());
+                  renderPrograms();
+                }
+              });
+          });
+          
+          // If no files, render empty
+          if (codeFiles.length === 0) {
+            renderPrograms();
+          }
+        })
+        .catch(error => {
+          console.log('Error loading programs from GitHub:', error);
+          renderPrograms();
+        });
+    }
+
+    function getLanguageFromFilename(filename) {
+      const extMatch = filename.match(/\.([^.]+)$/);
+      if (!extMatch) return 'Unknown';
+      const ext = extMatch[1].toLowerCase();
+      switch (ext) {
+        case 'java': return 'Java';
+        case 'py': return 'Python';
+        case 'js': return 'JavaScript';
+        case 'ts': return 'TypeScript';
+        case 'cpp': case 'cc': case 'cxx': return 'C++';
+        case 'c': return 'C';
+        case 'cs': return 'C#';
+        case 'go': return 'Go';
+        case 'rb': return 'Ruby';
+        case 'php': return 'PHP';
+        case 'rs': return 'Rust';
+        default: return ext.toUpperCase();
+      }
+    }
+
+    function populateLanguageFilter(languages) {
+      const sel = document.getElementById('languageFilter');
+      // Clear existing (keep 'All')
+      sel.innerHTML = '<option value="All">All</option>';
+      languages.forEach(lang => {
+        const opt = document.createElement('option');
+        opt.value = lang;
+        opt.textContent = lang;
+        sel.appendChild(opt);
+      });
+
+      sel.addEventListener('change', () => {
+        renderPrograms();
+      });
+    }
+    
+    function renderPrograms() {
+      const programsGrid = document.getElementById('programsGrid');
+      const entries = Object.entries(programs);
+
+      if (entries.length === 0) {
+        programsGrid.innerHTML = '<div class="empty-state">No programs found</div>';
+        return;
+      }
+
+      // Apply language filter
+      const selected = document.getElementById('languageFilter') ? document.getElementById('languageFilter').value : 'All';
+      const filtered = entries.filter(([id, prog]) => {
+        if (!prog.language) return selected === 'All';
+        return selected === 'All' || prog.language === selected;
+      });
+
+      // Sort entries alphabetically by program name (case-insensitive)
+      filtered.sort((a, b) => {
+        const nameA = (a[1].name || '').toLowerCase();
+        const nameB = (b[1].name || '').toLowerCase();
+        return nameA.localeCompare(nameB);
+      });
+
+      programsGrid.innerHTML = filtered
+        .map(([id, prog]) => `
+          <button class="program-card" onclick="showCode('${id}')" title="${prog.name}">
+            ${escapeHtml(prog.name)}
+          </button>
+        `).join('');
+    }
+
+    function enterSite() {
+      // Hide landing page and show view page
+      document.getElementById('landing').classList.remove('active');
+      document.getElementById('view').classList.add('active');
+    }
+
+    function showPage(pageId) {
+      // Hide all pages
+      document.querySelectorAll('.page').forEach(page => {
+        page.classList.remove('active');
+      });
+
+      // Remove active class from all nav buttons
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+
+      // Show selected page
+      document.getElementById(pageId).classList.add('active');
+
+      // Add active class to clicked button
+      event.target.classList.add('active');
+    }
+
+    function unlockAdminMode() {
+      const addTabBtn = document.getElementById('addTabBtn');
+      addTabBtn.style.display = 'block';
+      alert('Admin mode unlocked! You can now add programs.');
+    }
+
+    // Keyboard shortcut to unlock admin mode: Ctrl+Shift+A
+    document.addEventListener('keydown', function(event) {
+      if (event.ctrlKey && event.shiftKey && event.code === 'KeyA') {
+        unlockAdminMode();
+      }
+    });
+
+    function addProgram() {
+      const nameInput = document.getElementById('programName');
+      const codeInput = document.getElementById('programCode');
+      const name = nameInput.value.trim();
+      const code = codeInput.value.trim();
+
+      if (!name) {
+        alert('Please enter a program name');
+        return;
+      }
+
+      if (!code) {
+        alert('Please enter code');
+        return;
+      }
+
+      alert('To add programs:\n\n1. Add code files to the "programs" folder in your GitHub repo\n2. Supported: .java, .py, .js, .cpp, .go, .rb, .cs, etc.\n3. Push to GitHub\n4. Your programs will appear here automatically!');
+      
+      // Clear inputs
+      nameInput.value = '';
+      codeInput.value = '';
+      nameInput.focus();
+    }
+
+    function escapeHtml(text) {
+      const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      };
+      return text.replace(/[&<>"']/g, m => map[m]);
+    }
+
+    function showCode(id) {
+      const prog = programs[id];
+      if (!prog) return;
+
+      const codeDisplay = document.getElementById('codeDisplay');
+      codeDisplay.classList.remove('empty');
+      codeDisplay.innerHTML = `
+        <button class="copy-btn" onclick="copyToClipboard()">📋 Copy</button>
+        <code>${escapeHtml(prog.code)}</code>
+      `;
+
+      // Update card states
+      document.querySelectorAll('.program-card').forEach(card => {
+        card.classList.remove('active');
+      });
+      event.target.classList.add('active');
+    }
+
+    function copyToClipboard() {
+      const codeElement = document.querySelector('code');
+      const text = codeElement.innerText;
+
+      navigator.clipboard.writeText(text).then(() => {
+        const copyBtn = document.querySelector('.copy-btn');
+        copyBtn.textContent = '✓ Copied!';
+        copyBtn.classList.add('copied');
+
+        setTimeout(() => {
+          copyBtn.textContent = '📋 Copy';
+          copyBtn.classList.remove('copied');
+        }, 2000);
+      });
+    }
+
+    // Load programs when page loads
+    window.addEventListener('load', loadPrograms);
+  </script>
+</body>
+</html>
